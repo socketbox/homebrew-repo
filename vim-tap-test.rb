@@ -1,4 +1,4 @@
-class Vim < Formula
+class Vim-Tap-Test < Formula
   desc "Vi 'workalike' with many additional features"
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
@@ -6,14 +6,14 @@ class Vim < Formula
   sha256 "c342acaa26589f371fa34a5ca213b95811f26185c12443f8f48ad2868dee2935"
   head "https://github.com/vim/vim.git"
 
-  bottle do
-    rebuild 1
-    sha256 "07fc779dc3024fe6bdcdc784abd0004148b34522520f6ecf6dfc09b06bd6106a" => :high_sierra
-    sha256 "fbbd780ff7bfcf31256ac3c8c434527c9c3cb7d4a4c85555d6f0999d017fcd98" => :sierra
-    sha256 "3e6578ea3b58d7d1bb4ca43f834539d821670de43c3b9139fadd42b360a8a012" => :el_capitan
-  end
-
-  deprecated_option "override-system-vi" => "with-override-system-vi"
+#  bottle do
+#    rebuild 1
+#    sha256 "07fc779dc3024fe6bdcdc784abd0004148b34522520f6ecf6dfc09b06bd6106a" => :high_sierra
+#    sha256 "fbbd780ff7bfcf31256ac3c8c434527c9c3cb7d4a4c85555d6f0999d017fcd98" => :sierra
+#    sha256 "3e6578ea3b58d7d1bb4ca43f834539d821670de43c3b9139fadd42b360a8a012" => :el_capitan
+#  end
+#
+#  deprecated_option "override-system-vi" => "with-override-system-vi"
 
   option "with-override-system-vi", "Override system vi"
   option "with-gettext", "Build vim with National Language Support (translated messages, keymaps)"
@@ -30,14 +30,14 @@ class Vim < Formula
     option "without-#{language}", "Build vim without #{language} support"
   end
 
-  depends_on "perl"
-  depends_on "ruby"
+  #depends_on "perl"
+  #depends_on "ruby"
   depends_on "python" => :recommended if build.without? "python@2"
   depends_on "gettext" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
   depends_on "python@2" => :optional
-  depends_on :x11 if build.with? "client-server"
+  #depends_on :x11 if build.with? "client-server"
 
   conflicts_with "ex-vi",
     :because => "vim and ex-vi both install bin/ex and bin/view"
@@ -51,7 +51,8 @@ class Vim < Formula
     # vim doesn't require any Python package, unset PYTHONPATH.
     ENV.delete("PYTHONPATH")
 
-    opts = ["--enable-perlinterp", "--enable-rubyinterp"]
+    #opts = ["--enable-perlinterp", "--enable-rubyinterp"]
+    opts = ["--enable-python3interp", "--enable-rubyinterp"]
 
     (LANGUAGES_OPTIONAL + LANGUAGES_DEFAULT).each do |language|
       feature = { "python" => "python3", "python@2" => "python" }
