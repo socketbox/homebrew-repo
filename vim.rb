@@ -1,25 +1,45 @@
 class Vim < Formula
-  desc "Vim without Perl, no GUI, and Python 3"
+  desc "Vim without the Perl"
   homepage "https://www.vim.org/"
-  url "https://github.com/vim/vim/archive/v8.1.0250.tar.gz" 
+  # vim should only be updated every 50 releases on multiples of 50
+  url "https://github.com/vim/vim/archive/v8.1.0250.tar.gz"
   sha256 "f35193627469f4dc307e9286b21b2c818faaa2c67f03fb4983b58010f26f7f78"
   head "https://github.com/vim/vim.git"
 
-  
+  bottle do
+    sha256 "a6616462e8fac975e6ffbc6198c8dd49f6b662d0779f3e5c03d442a1ca9c9304" => :high_sierra
+    sha256 "5940aed16648840e6b23d1ffe13ff19625cd4c8229161f1d7721d6a105aaa0eb" => :sierra
+    sha256 "af39ad76cd2a34863bbed507af29ab6b5a89f979e1d25e887059dd67b47f40ce" => :el_capitan
+  end
+
   deprecated_option "override-system-vi" => "with-override-system-vi"
 
   option "with-override-system-vi", "Override system vi"
   option "with-gettext", "Build vim with National Language Support (translated messages, keymaps)"
   option "with-client-server", "Enable client/server mode"
 
-  depends_on "perl" => :optional
+  #LANGUAGES_OPTIONAL = %w[lua python@2 tcl].freeze
+  #LANGUAGES_DEFAULT  = %w[python].freeze
+  LANGUAGES_DEFAULT = %w[lua python tcl].freeze
+  LANGUAGES_OPTIONAL  = %w[python@2].freeze
+
+  option "with-python@2", "Build vim with python@2 instead of python[3] support"
+  LANGUAGES_OPTIONAL.each do |language|
+    option "with-#{language}", "Build vim with #{language} support"
+  end
+  LANGUAGES_DEFAULT.each do |language|
+    option "without-#{language}", "Build vim without #{language} support"
+  end
+
+  #depends_on "perl"
   depends_on "ruby" => :optional
-  depends_on "python" => :optional
+  depends_on "python" => :recommended if build.without? "python@2"
   depends_on "gettext" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
+  depends_on "python@2" => :optional
   depends_on :x11 if build.with? "client-server"
-  
+
   conflicts_with "ex-vi",
     :because => "vim and ex-vi both install bin/ex and bin/view"
 
@@ -32,13 +52,35 @@ class Vim < Formula
     # vim doesn't require any Python package, unset PYTHONPATH.
     ENV.delete("PYTHONPATH")
 
-    opts = [ "--with-features=huge", "--enable-darwin", "--enable-gui=no",
-            "--without-x", "--enable-luainterp=yes", "--enable-python3interp=yes", 
-            "--enable-tclinterp=yes", "--enable-rubyinterp=yes", "--enable-perlinterp=no",
-            "--enable-largefile", "--enable-acl", "--with-mac-arch=intel", 
-            "--with-developer-dir=/Library/Developer" ]            
+    opts = ["--enable-perlinterp=no", "--enable-rubyinterp"]
+
+    (LANGUAGES_OPTIONAL + LANGUAGES_DEFAULT).each do |language|
+      feature = { "python" => "python3", "python@2" => "python" }
+      if build.with? language
+        opts << "--enable-#{feature.fetch(language, language)}interp"
+      end
+    end
+
+    if opts.include?("--enable-pythoninterp") && opts.include?("--enable-python3interp")
+      # only compile with either python or python@2 support, but not both
+      # (if vim74 is compiled with +python3/dyn, the Python[3] library lookup segfaults
+      # in other words, a command like ":py3 import sys" leads to a SEGV)
+      opts -= %w[--enable-python3interp]
+    end
 
     opts << "--disable-nls" if build.without? "gettext"
+    opts << "--enable-gui=no"
+    opts << "--enable-largefile"
+    opts << "--with-features=huge"
+
+    if build.with? "client-server"
+      opts << "--with-x"
+    else
+      opts << "--without-x"
+    end
+
+    if build.with?("lua") || build.with?("luajit")
+      opts << "--enable-luainterp"
 
       if build.with? "luajit"
         opts << "--with-luajit"
@@ -54,6 +96,7 @@ class Vim < Formula
         EOS
         opts -= %w[--with-luajit]
       end
+    end
 
     # We specify HOMEBREW_PREFIX as the prefix to make vim look in the
     # the right place (HOMEBREW_PREFIX/share/vim/{vimrc,vimfiles}) for
@@ -67,7 +110,7 @@ class Vim < Formula
                           "--with-tlib=ncurses",
                           "--enable-cscope",
                           "--enable-terminal",
-                          "--with-compiledby='SocketBox <admin@socketbox.com>'",
+                          "--with-compiledby=Homebrew",
                           *opts
     system "make"
     # Parallel install could miss some symlinks
@@ -99,5 +142,5 @@ class Vim < Formula
     if build.with? "gettext"
       assert_match "+gettext", shell_output("#{bin}/vim --version")
     end
-end
+  end
 end
