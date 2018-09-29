@@ -1,8 +1,8 @@
 class Vim < Formula
   desc "Vim without Perl, no GUI, and Python 3"
   homepage "https://www.vim.org/"
-  url "https://github.com/vim/vim/archive/v8.1.0250.tar.gz" 
-  sha256 "f35193627469f4dc307e9286b21b2c818faaa2c67f03fb4983b58010f26f7f78"
+  url "https://github.com/vim/vim/archive/v8.1.0438.tar.gz" 
+  sha256 "f037f46965e8cbc47a13a5ed9fc0173d6019b11ca6f535d201d36ed3faf2aaff"
   head "https://github.com/vim/vim.git"
 
   
