@@ -16,8 +16,6 @@ class Vim < Formula
   option "with-override-system-vi", "Override system vi"
   option "with-gettext", "Build vim with National Language Support (translated messages, keymaps)"
 
-  #LANGUAGES_OPTIONAL = %w[lua python@2 tcl].freeze
-  #LANGUAGES_DEFAULT  = %w[python].freeze
   LANGUAGES_DEFAULT = %w[lua python tcl].freeze
   LANGUAGES_OPTIONAL  = %w[python@2].freeze
 
@@ -31,11 +29,11 @@ class Vim < Formula
 
   #depends_on "perl"
   depends_on "ruby" => :optional
-  depends_on "python" => :recommended if build.without? "python@2"
+  #depends_on "python" => :recommended if build.without? "python@2"
   depends_on "gettext" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
-  depends_on "python@2" => :optional
+  #depends_on "python@2" => :optional
 
   conflicts_with "ex-vi",
     :because => "vim and ex-vi both install bin/ex and bin/view"
