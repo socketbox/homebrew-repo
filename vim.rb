@@ -42,7 +42,7 @@ class Vim < Formula
     :because => "vim and ex-vi both install bin/ex and bin/view"
 
   def install
-    ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
+    #ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
     ENV.prepend_path "PATH", "/Users/chb/Users/chb/.pyenv/versions/threesevenzero/bin/python"
 
     # https://github.com/Homebrew/homebrew-core/pull/1046
