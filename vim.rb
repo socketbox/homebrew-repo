@@ -1,5 +1,5 @@
 class Vim < Formula
-  desc "Vi 'workalike' with many additional features"
+  desc "Vim without Perl, no GUI, and Python 3"
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
   url "https://github.com/vim/vim/archive/v8.1.0450.tar.gz"
@@ -12,12 +12,14 @@ class Vim < Formula
     sha256 "b839af7e8dadc53f31cbb06539ca169c494602da297329e0755832811d8435ed" => :sierra
   end
 
+  deprecated_option "override-system-vi" => "with-override-system-vi"
   option "with-override-system-vi", "Override system vi"
   option "with-gettext", "Build vim with National Language Support (translated messages, keymaps)"
-  option "with-client-server", "Enable client/server mode"
 
-  LANGUAGES_OPTIONAL = %w[lua python@2 tcl].freeze
-  LANGUAGES_DEFAULT  = %w[python].freeze
+  #LANGUAGES_OPTIONAL = %w[lua python@2 tcl].freeze
+  #LANGUAGES_DEFAULT  = %w[python].freeze
+  LANGUAGES_DEFAULT = %w[lua python tcl].freeze
+  LANGUAGES_OPTIONAL  = %w[python@2].freeze
 
   option "with-python@2", "Build vim with python@2 instead of python[3] support"
   LANGUAGES_OPTIONAL.each do |language|
@@ -27,11 +29,8 @@ class Vim < Formula
     option "without-#{language}", "Build vim without #{language} support"
   end
 
-  deprecated_option "override-system-vi" => "with-override-system-vi"
-
-  depends_on "perl"
-  depends_on "ruby"
-  depends_on :x11 if build.with? "client-server"
+  #depends_on "perl"
+  depends_on "ruby" => :optional
   depends_on "python" => :recommended if build.without? "python@2"
   depends_on "gettext" => :optional
   depends_on "lua" => :optional
@@ -51,7 +50,11 @@ class Vim < Formula
     # vim doesn't require any Python package, unset PYTHONPATH.
     ENV.delete("PYTHONPATH")
 
-    opts = ["--enable-perlinterp", "--enable-rubyinterp"]
+    opts = [ "--with-features=huge", "--enable-darwin", "--enable-gui=no",
+            "--without-x", "--enable-luainterp=yes", "--enable-python3interp=yes", 
+            "--enable-tclinterp=yes", "--enable-rubyinterp=yes", "--enable-perlinterp=no",
+            "--enable-largefile", "--enable-acl", "--with-mac-arch=intel", 
+            "--with-developer-dir=/Library/Developer" ]            
 
     (LANGUAGES_OPTIONAL + LANGUAGES_DEFAULT).each do |language|
       feature = { "python" => "python3", "python@2" => "python" }
@@ -79,12 +82,12 @@ class Vim < Formula
     if build.with?("lua") || build.with?("luajit")
       opts << "--enable-luainterp"
 
-      if build.with? "luajit"
+    if build.with? "luajit"
         opts << "--with-luajit"
         opts << "--with-lua-prefix=#{Formula["luajit"].opt_prefix}"
       else
         opts << "--with-lua-prefix=#{Formula["lua"].opt_prefix}"
-      end
+    end
 
       if build.with?("lua") && build.with?("luajit")
         onoe <<~EOS
