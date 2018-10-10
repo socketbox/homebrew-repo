@@ -1,5 +1,5 @@
 class Vim < Formula
-  desc "Vim without Perl, NLS, GUI, and Python 2"
+  desc "Vim without Perl and GUI"
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
   url "https://github.com/vim/vim/archive/v8.1.0450.tar.gz"
@@ -13,47 +13,70 @@ class Vim < Formula
   end
 
   option "with-override-system-vi", "Override system vi"
-  deprecated_option "override-system-vi" => "with-override-system-vi"
+  option "with-gettext", "Build vim with National Language Support (translated messages, keymaps)"
+  option "with-client-server", "Enable client/server mode"
 
-  LANGUAGES_OPTIONAL = %w[python lua tcl].freeze
+  LANGUAGES_OPTIONAL = %w[lua tcl].freeze
+  LANGUAGES_DEFAULT  = %w[python].freeze
 
+  option "with-python@2", "Build vim with python@2 instead of python[3] support"
   LANGUAGES_OPTIONAL.each do |language|
     option "with-#{language}", "Build vim with #{language} support"
   end
+  LANGUAGES_DEFAULT.each do |language|
+    option "without-#{language}", "Build vim without #{language} support"
+  end
 
+  deprecated_option "override-system-vi" => "with-override-system-vi"
+
+  depends_on "ruby"
+  depends_on :x11 if build.with? "client-server"
+  depends_on "python" => :recommended if build.without? "python@2"
+  depends_on "gettext" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
-  depends_on "ruby" => :optional
 
   conflicts_with "ex-vi",
     :because => "vim and ex-vi both install bin/ex and bin/view"
 
   def install
+    ENV.prepend_path "PATH", Formula["python"].opt_libexec/"bin"
+
     # https://github.com/Homebrew/homebrew-core/pull/1046
     ENV.delete("SDKROOT")
 
     # vim doesn't require any Python package, unset PYTHONPATH.
     ENV.delete("PYTHONPATH")
 
-    opts = [ "--with-features=huge", "--enable-darwin", "--enable-gui=no",
-            "--without-x", "--enable-luainterp=yes", "--enable-python3interp=yes", 
-            "--enable-tclinterp=yes", "--enable-rubyinterp=yes", "--enable-perlinterp=no",
-            "--enable-largefile", "--enable-acl", "--with-mac-arch=intel", 
-            "--with-developer-dir=/Library/Developer" ]            
+    opts = ["--enable-rubyinterp"]
 
-    opts << "--disable-nls"
+    (LANGUAGES_OPTIONAL + LANGUAGES_DEFAULT).each do |language|
+      feature = { "python" => "python3" }
+      if build.with? language
+        opts << "--enable-#{feature.fetch(language, language)}interp"
+      end
+    end
+
+    if opts.include?("--enable-pythoninterp") && opts.include?("--enable-python3interp")
+      # only compile with either python or python@2 support, but not both
+      # (if vim74 is compiled with +python3/dyn, the Python[3] library lookup segfaults
+      # in other words, a command like ":py3 import sys" leads to a SEGV)
+      opts -= %w[--enable-python3interp]
+    end
+
+    opts << "--disable-nls" if build.without? "gettext"
     opts << "--enable-gui=no"
-    opts << "--without-x"
+		opts << "--without-x"
 
     if build.with?("lua") || build.with?("luajit")
       opts << "--enable-luainterp"
 
-    if build.with? "luajit"
+      if build.with? "luajit"
         opts << "--with-luajit"
         opts << "--with-lua-prefix=#{Formula["luajit"].opt_prefix}"
       else
         opts << "--with-lua-prefix=#{Formula["lua"].opt_prefix}"
-    end
+      end
 
       if build.with?("lua") && build.with?("luajit")
         onoe <<~EOS
@@ -90,13 +113,23 @@ class Vim < Formula
   end
 
   test do
-    if build.with? "python"
+    if build.with? "python@2"
+      (testpath/"commands.vim").write <<~EOS
+        :python import vim; vim.current.buffer[0] = 'hello world'
+        :wq
+      EOS
+      system bin/"vim", "-T", "dumb", "-s", "commands.vim", "test.txt"
+      assert_equal "hello world", File.read("test.txt").chomp
+    elsif build.with? "python"
       (testpath/"commands.vim").write <<~EOS
         :python3 import vim; vim.current.buffer[0] = 'hello python3'
         :wq
       EOS
       system bin/"vim", "-T", "dumb", "-s", "commands.vim", "test.txt"
       assert_equal "hello python3", File.read("test.txt").chomp
+    end
+    if build.with? "gettext"
+      assert_match "+gettext", shell_output("#{bin}/vim --version")
     end
   end
 end
