@@ -2,8 +2,8 @@ class Vim < Formula
   desc "Vim without Perl, NLS, GUI, and Python 2"
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
-  url "https://bintray.com/homebrew/bottles/download_file?file_path=vim-8.1.0450.high_sierra.bottle.tar.gz"
-	sha256 "19e30d255f429e1ae6a70d1fe08028e1fd14b257ebac7d4470ed1dbed5142648"
+  url "https://github.com/vim/vim/archive/v8.1.0450.tar.gz"
+  sha256 "19e30d255f429e1ae6a70d1fe08028e1fd14b257ebac7d4470ed1dbed5142648"
   head "https://github.com/vim/vim.git"
 
   bottle do
