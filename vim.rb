@@ -15,14 +15,10 @@ class Vim < Formula
   option "with-override-system-vi", "Override system vi"
   deprecated_option "override-system-vi" => "with-override-system-vi"
 
-  LANGUAGES_OPTIONAL = %w[lua tcl].freeze
-  LANGUAGES_DEFAULT  = %w[python].freeze
+  LANGUAGES_OPTIONAL = %w[python lua tcl].freeze
 
   LANGUAGES_OPTIONAL.each do |language|
     option "with-#{language}", "Build vim with #{language} support"
-  end
-  LANGUAGES_DEFAULT.each do |language|
-    option "without-#{language}", "Build vim without #{language} support"
   end
 
   depends_on "ruby" => :optional
@@ -47,13 +43,6 @@ class Vim < Formula
             "--enable-tclinterp=yes", "--enable-rubyinterp=yes", "--enable-perlinterp=no",
             "--enable-largefile", "--enable-acl", "--with-mac-arch=intel", 
             "--with-developer-dir=/Library/Developer" ]            
-
-    (LANGUAGES_OPTIONAL + LANGUAGES_DEFAULT).each do |language|
-      feature = { "python" => "python3" }
-      if build.with? language
-        opts << "--enable-#{feature.fetch(language, language)}interp"
-      end
-    end
 
     opts << "--disable-nls"
     opts << "--enable-gui=no"
