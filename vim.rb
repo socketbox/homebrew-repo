@@ -1,5 +1,5 @@
 class Vim < Formula
-  desc "Vim without Perl, without NLS, no GUI, and Python 3, with no option of Python 2"
+  desc "Vim without Perl, NLS, GUI, and Python 2"
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
   url "https://bintray.com/homebrew/bottles/download_file?file_path=vim-8.1.0450.high_sierra.bottle.tar.gz"
@@ -21,9 +21,9 @@ class Vim < Formula
     option "with-#{language}", "Build vim with #{language} support"
   end
 
-  depends_on "ruby" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
+  depends_on "ruby" => :optional
 
   conflicts_with "ex-vi",
     :because => "vim and ex-vi both install bin/ex and bin/view"
