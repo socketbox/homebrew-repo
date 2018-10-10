@@ -3,7 +3,7 @@ class Vim < Formula
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
   url "https://bintray.com/homebrew/bottles/download_file?file_path=vim-8.1.0450.high_sierra.bottle.tar.gz"
-	sha256 "3b29264c595e606925615fcc9d352f38be1021ca2d11c6a97b933d1981853b0f"
+	sha256 "19e30d255f429e1ae6a70d1fe08028e1fd14b257ebac7d4470ed1dbed5142648"
   head "https://github.com/vim/vim.git"
 
   bottle do
@@ -38,7 +38,7 @@ class Vim < Formula
     # vim doesn't require any Python package, unset PYTHONPATH.
     ENV.delete("PYTHONPATH")
 
-    opts = [ "--enable-darwin", "--enable-gui=no",
+    opts = [ "--with-features=huge", "--enable-darwin", "--enable-gui=no",
             "--without-x", "--enable-luainterp=yes", "--enable-python3interp=yes", 
             "--enable-tclinterp=yes", "--enable-rubyinterp=yes", "--enable-perlinterp=no",
             "--enable-largefile", "--enable-acl", "--with-mac-arch=intel", 
