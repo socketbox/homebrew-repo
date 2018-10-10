@@ -14,7 +14,6 @@ class Vim < Formula
 
   option "with-override-system-vi", "Override system vi"
   deprecated_option "override-system-vi" => "with-override-system-vi"
-  option "with-gettext", "Build vim with National Language Support (translated messages, keymaps)"
 
   LANGUAGES_OPTIONAL = %w[lua tcl].freeze
   LANGUAGES_DEFAULT  = %w[python].freeze
@@ -27,7 +26,6 @@ class Vim < Formula
   end
 
   depends_on "ruby" => :optional
-  depends_on "gettext" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
 
@@ -113,9 +111,6 @@ class Vim < Formula
       EOS
       system bin/"vim", "-T", "dumb", "-s", "commands.vim", "test.txt"
       assert_equal "hello python3", File.read("test.txt").chomp
-    end
-    if build.with? "gettext"
-      assert_match "+gettext", shell_output("#{bin}/vim --version")
     end
   end
 end
