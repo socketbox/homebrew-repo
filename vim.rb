@@ -38,7 +38,7 @@ class Vim < Formula
     # vim doesn't require any Python package, unset PYTHONPATH.
     ENV.delete("PYTHONPATH")
 
-    opts = [ "--with-features=huge", "--enable-darwin", "--enable-gui=no",
+    opts = [ "--enable-darwin", "--enable-gui=no",
             "--without-x", "--enable-luainterp=yes", "--enable-python3interp=yes", 
             "--enable-tclinterp=yes", "--enable-rubyinterp=yes", "--enable-perlinterp=no",
             "--enable-largefile", "--enable-acl", "--with-mac-arch=intel", 
