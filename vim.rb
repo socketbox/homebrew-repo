@@ -1,5 +1,5 @@
 class Vim < Formula
-  desc "Vim without Perl, no GUI, and Python 3"
+  desc "Vim without Perl, without NLS, no GUI, and Python 3, with no option of Python 2"
   homepage "https://www.vim.org/"
   # vim should only be updated every 50 releases on multiples of 50
   url "https://bintray.com/homebrew/bottles/download_file?file_path=vim-8.1.0450.high_sierra.bottle.tar.gz"
@@ -12,14 +12,13 @@ class Vim < Formula
     sha256 "b839af7e8dadc53f31cbb06539ca169c494602da297329e0755832811d8435ed" => :sierra
   end
 
-  deprecated_option "override-system-vi" => "with-override-system-vi"
   option "with-override-system-vi", "Override system vi"
+  deprecated_option "override-system-vi" => "with-override-system-vi"
   option "with-gettext", "Build vim with National Language Support (translated messages, keymaps)"
 
-  LANGUAGES_DEFAULT = %w[lua python tcl].freeze
-  LANGUAGES_OPTIONAL  = %w[python@2].freeze
+  LANGUAGES_OPTIONAL = %w[lua tcl].freeze
+  LANGUAGES_DEFAULT  = %w[python].freeze
 
-  option "with-python@2", "Build vim with python@2 instead of python[3] support"
   LANGUAGES_OPTIONAL.each do |language|
     option "with-#{language}", "Build vim with #{language} support"
   end
@@ -27,13 +26,10 @@ class Vim < Formula
     option "without-#{language}", "Build vim without #{language} support"
   end
 
-  #depends_on "perl"
   depends_on "ruby" => :optional
-  #depends_on "python" => :recommended if build.without? "python@2"
   depends_on "gettext" => :optional
   depends_on "lua" => :optional
   depends_on "luajit" => :optional
-  #depends_on "python@2" => :optional
 
   conflicts_with "ex-vi",
     :because => "vim and ex-vi both install bin/ex and bin/view"
@@ -55,27 +51,15 @@ class Vim < Formula
             "--with-developer-dir=/Library/Developer" ]            
 
     (LANGUAGES_OPTIONAL + LANGUAGES_DEFAULT).each do |language|
-      feature = { "python" => "python3", "python@2" => "python" }
+      feature = { "python" => "python3" }
       if build.with? language
         opts << "--enable-#{feature.fetch(language, language)}interp"
       end
     end
 
-    if opts.include?("--enable-pythoninterp") && opts.include?("--enable-python3interp")
-      # only compile with either python or python@2 support, but not both
-      # (if vim74 is compiled with +python3/dyn, the Python[3] library lookup segfaults
-      # in other words, a command like ":py3 import sys" leads to a SEGV)
-      opts -= %w[--enable-python3interp]
-    end
-
-    opts << "--disable-nls" if build.without? "gettext"
+    opts << "--disable-nls"
     opts << "--enable-gui=no"
-
-    if build.with? "client-server"
-      opts << "--with-x"
-    else
-      opts << "--without-x"
-    end
+    opts << "--without-x"
 
     if build.with?("lua") || build.with?("luajit")
       opts << "--enable-luainterp"
@@ -122,14 +106,7 @@ class Vim < Formula
   end
 
   test do
-    if build.with? "python@2"
-      (testpath/"commands.vim").write <<~EOS
-        :python import vim; vim.current.buffer[0] = 'hello world'
-        :wq
-      EOS
-      system bin/"vim", "-T", "dumb", "-s", "commands.vim", "test.txt"
-      assert_equal "hello world", File.read("test.txt").chomp
-    elsif build.with? "python"
+    if build.with? "python"
       (testpath/"commands.vim").write <<~EOS
         :python3 import vim; vim.current.buffer[0] = 'hello python3'
         :wq
